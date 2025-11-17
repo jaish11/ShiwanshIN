@@ -12,7 +12,7 @@ namespace SS.Core.DTOs
         public string Department { get; set; }
         public string Category { get; set; }
         public string Image { get; set; }
-        public string Duration { get; set; }
+        public string? Duration { get; set; }
         public string Location { get; set; }
         public List<string> Skills { get; set; }
         public List<string> Responsibilities { get; set; }
