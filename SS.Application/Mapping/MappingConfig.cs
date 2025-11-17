@@ -9,8 +9,12 @@ namespace SS.Application.Mapping
     {
         public MappingConfig()
         {
-            CreateMap<JobOpportunityDto, JobOpportunity>();
-            CreateMap<JobOpportunity, JobOpportunityDto>();
+            //CreateMap<JobOpportunityDto, JobOpportunity>();
+            //CreateMap<JobOpportunity, JobOpportunityDto>();
+            CreateMap<JobOpportunity, JobOpportunityDto>().ReverseMap();
+            CreateMap<ApplyJob, ApplyJobDto>().ReverseMap();
+            CreateMap<User, UserDto>().ReverseMap();
+            CreateMap<UserProfile, UserProfileDto>().ReverseMap();
         }
     }
 }

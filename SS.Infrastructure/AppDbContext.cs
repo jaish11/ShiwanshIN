@@ -10,5 +10,9 @@ namespace SS.Infrastructure
         {
         }
         public DbSet<JobOpportunity> JobOpportunities { get; set; }
-        }
+        public DbSet<ApplyJob> ApplyJobs { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<UserProfile> UserProfiles { get; set; }
+    }
 }
+ 

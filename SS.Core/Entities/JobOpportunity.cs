@@ -13,7 +13,7 @@ namespace SS.Core.Entities
         public string Category { get; set; }
 
         public string Image { get; set; }
-        public string Duration { get; set; }
+        public string? Duration { get; set; }
         public string Location { get; set; }
         public string SkillsJson { get; set; }
         public string ResponsibilitiesJson { get; set; }
