@@ -24,6 +24,9 @@ namespace SS.Application.Services
 
         public async Task<int> RegisterAsync(RegisterDto registerDto, string role = "User", bool isGoogle = false)
         {
+            var existingUser = await GetUserByEmailAsync(registerDto.Email);
+            if (existingUser != null)
+                throw new Exception("EmailAlreadyExists");
             var token = Guid.NewGuid().ToString("N");
             var parameters = new DynamicParameters();
             parameters.Add("@Email", registerDto.Email);
@@ -180,6 +183,11 @@ namespace SS.Application.Services
             var verifyUrl = $"{backendUrl}/api/auths/verify-email?token={token}";
 
             //var verifyUrl = $"https://localhost:7130/api/auths/verify-email?token={token}";
+            var host = _configuration["EmailSettings:Host"];
+            var port = int.Parse(_configuration["EmailSettings:Port"]);
+            var fromEmail = _configuration["EmailSettings:FromEmail"];
+            var password = _configuration["EmailSettings:Password"];
+            var displayName = _configuration["EmailSettings:DisplayName"];
 
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress("OArch", "no-reply@oarch.com"));
@@ -188,12 +196,55 @@ namespace SS.Application.Services
 
             message.Body = new TextPart("html")
             {
-                Text = $"<h2>Verify Email</h2><p>Click the link to confirm:</p><a href=\"{verifyUrl}\">Verify Email</a>"
+                Text = $@"
+                <div style='font-family:Arial, sans-serif; max-width:600px; margin:auto; padding:25px;
+                                background:#ffffff; border-radius:12px; border:1px solid #e2e2e2;'>
+
+                        <!-- Header -->
+                        <h2 style='color:#0a66c2; margin-top:0; margin-bottom:8px; font-size:22px;'>
+                            Verify Your Email
+                        </h2>
+
+                        <!-- Small intro -->
+                        <p style='color:#555; font-size:15px; margin-top:0;'>
+                            Thank you for registering with <strong>ShiwanshIn</strong>.
+                            Please confirm your email address by clicking the button below:
+                        </p>
+
+                        <!-- Button -->
+                        <div style='text-align:center; margin:30px 0;'>
+                            <a href='{verifyUrl}'
+                               style='background:#0a66c2; color:white; padding:12px 24px; 
+                                      text-decoration:none; border-radius:6px; font-size:16px; display:inline-block;'>
+                                Verify Email
+                            </a>
+                        </div>
+
+                        <!-- Fallback link -->
+                        <p style='font-size:14px; color:#666;'>
+                            If the button doesn't work, copy and paste this link in your browser:
+                        </p>
+
+                        <p style='font-size:13px; color:#0a66c2; word-break:break-all; margin-top:5px;'>
+                            {verifyUrl}
+                        </p>
+
+                        <!-- Divider -->
+                        <hr style='margin:30px 0; border:none; border-top:1px solid #e2e2e2;' />
+
+                        <!-- Footer -->
+                        <p style='font-size:13px; color:#888; text-align:center; margin:0;'>
+                            — ShiwanshIn Team
+                        </p>
+
+                 </div>"
             };
 
+
+
             using var client = new MailKit.Net.Smtp.SmtpClient();
-            await client.ConnectAsync("smtp.gmail.com", 587, MailKit.Security.SecureSocketOptions.StartTls);
-            await client.AuthenticateAsync("engjaish2004@gmail.com", "ewmsmqflbjjwdmfo");
+            await client.ConnectAsync(host, port, MailKit.Security.SecureSocketOptions.StartTls);
+            await client.AuthenticateAsync(fromEmail, password);
             await client.SendAsync(message);
             await client.DisconnectAsync(true);
         }
