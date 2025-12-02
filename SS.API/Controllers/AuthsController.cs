@@ -28,7 +28,11 @@ namespace SS.API.Controllers
         {
             var token = await _authService.LoginAsync(dto);
             if (token == null) return Unauthorized("Invalid credentials");
+
             var user = await _authService.GetUserByEmailAsync(dto.Email);
+            if (user == null)
+                return BadRequest("User not found after login. Something went wrong.");
+            
             return Ok(new
             {
                 token,
