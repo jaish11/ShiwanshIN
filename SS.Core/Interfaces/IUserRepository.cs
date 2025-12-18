@@ -16,6 +16,10 @@ namespace SS.Core.Interfaces
         Task<User> GetByEmailTokenAsync(string sp, DynamicParameters parameters);
         Task MarkEmailVerifiedAsync(string sp, DynamicParameters parameters);
         Task UpdateEmailTokenAsync(string sp, DynamicParameters parameters);
+        //Reset/Forgot Password
+        Task SetPasswordResetTokenAsync(string sp, DynamicParameters parameters);
+        Task<User> GetByResetTokenAsync(string sp, DynamicParameters parameters);
+        Task UpdatePasswordAsync(string sp, DynamicParameters parameters);
 
     }
 }

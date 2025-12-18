@@ -28,6 +28,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.RequireHttpsMetadata = false;
     options.SaveToken = true;
+    options.MapInboundClaims = false;
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -141,12 +142,23 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAngularClient", policy =>
     {
         policy
-            .AllowAnyOrigin()   // OR .WithOrigins("http://localhost:4200")
+            .AllowAnyOrigin()
             .AllowAnyHeader()
-            .AllowAnyMethod()
-            .WithExposedHeaders("Authorization");
+            .AllowAnyMethod();
     });
 });
+
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowAngularClient", policy =>
+//    {
+//        policy
+//            .AllowAnyOrigin()   // OR .WithOrigins("http://localhost:4200")
+//            .AllowAnyHeader()
+//            .AllowAnyMethod()
+//            .WithExposedHeaders("Authorization");
+//    });
+//});
 #endregion AddCors
 
 var app = builder.Build();
@@ -204,7 +216,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
+app.UseRouting();
 
 app.UseCors("AllowAngularClient");
 

@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SS.Application.Services;
 using SS.Core.DTOs;
+using System.Security.Claims;
 
 namespace SS.API.Controllers
 {
@@ -73,6 +75,41 @@ namespace SS.API.Controllers
                 return BadRequest("Invalid or expired token");
 
             return Ok("Email verified successfully!");
+        }
+
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
+        {
+            await _authService.ForgotPasswordAsync(dto.Email);
+            return Ok("Password reset link sent");
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
+        {
+            var ok = await _authService.ResetPasswordAsync(dto);
+
+            if (!ok)
+                return BadRequest(new { message = "Reset link is invalid or expired" });
+
+            return Ok(new { message = "Password reset successful" });
+        }
+
+
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDto dto)
+        {
+            //var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return Unauthorized("Invalid user token");
+            }
+            var ok = await _authService.ChangePasswordAsync(userId, dto);
+            return ok ? Ok(new { message = "Password changed successfully" }): BadRequest(new { message = "Old password incorrect" });
         }
 
         #region Resend Varification

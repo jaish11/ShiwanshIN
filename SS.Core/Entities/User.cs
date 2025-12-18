@@ -14,6 +14,10 @@ namespace SS.Core.Entities
         //this is for email varification
         public bool IsEmailVerified { get; set; }
         public string EmailVerificationToken { get; set; }
+        //Forgot password
+        public string PasswordResetToken { get; set; }
+        public DateTime? PasswordResetTokenExpiry { get; set; }
+
 
     }
 }

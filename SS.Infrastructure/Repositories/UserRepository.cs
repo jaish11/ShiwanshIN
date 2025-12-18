@@ -73,6 +73,22 @@ namespace SS.Infrastructure.Repositories
             using var connection = new SqlConnection(_connectionString);
             await connection.ExecuteAsync(sp, parameters, commandType: CommandType.StoredProcedure);
         }
+        public async Task SetPasswordResetTokenAsync(string sp, DynamicParameters parameters)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.ExecuteAsync(sp, parameters, commandType: CommandType.StoredProcedure);
+        }
+        public async Task<User> GetByResetTokenAsync(string sp, DynamicParameters parameters)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            return await connection.QueryFirstOrDefaultAsync<User>(sp, parameters, commandType: CommandType.StoredProcedure);
+        }
+
+        public async Task UpdatePasswordAsync(string sp, DynamicParameters parameters)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.ExecuteAsync(sp, parameters, commandType: CommandType.StoredProcedure);
+        }
 
     }
 }

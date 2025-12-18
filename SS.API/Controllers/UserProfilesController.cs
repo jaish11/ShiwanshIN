@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SS.Application.Services;
 using SS.Core.DTOs;
+using System.Security.Claims;
 
 namespace SS.API.Controllers
 {
@@ -72,6 +73,36 @@ namespace SS.API.Controllers
             //if (profile == null) return NotFound();
             //return Ok(profile);
         }
+
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<IActionResult> GetMyProfile()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            int userId = int.Parse(userIdClaim.Value);
+
+            var profile = await _service.GetByUserIdAsync(userId);
+
+            if (profile == null)
+            {
+                var user = await _authService.GetUserByIdAsync(userId);
+                if (user == null) return NotFound();
+
+                return Ok(new UserProfileDto
+                {
+                    UserId = userId,
+                    FullName = user.FullName,
+                    Email = user.Email,
+                    IsActive = true
+                });
+            }
+
+            return Ok(profile);
+        }
+
         [HttpPost]
         [Consumes("multipart/form-data")]
         [Authorize] // require login
