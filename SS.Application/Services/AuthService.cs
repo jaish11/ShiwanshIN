@@ -22,6 +22,7 @@ namespace SS.Application.Services
             _configuration = configuration;
         }
 
+        #region Register
         public async Task<int> RegisterAsync(RegisterDto registerDto, string role = "User", bool isGoogle = false)
         {
             var existingUser = await GetUserByEmailAsync(registerDto.Email);
@@ -50,6 +51,9 @@ namespace SS.Application.Services
                 await SendVerificationEmail(registerDto.Email, token);
             return id;
         }
+        #endregion Register
+
+        #region Login
         public async Task<string> LoginAsync(LoginDto loginDto)
         {
             var parameters = new DynamicParameters();
@@ -63,6 +67,9 @@ namespace SS.Application.Services
             var token = GenerateJwtToken(user);
             return token;
         }
+        #endregion Login
+
+        #region Verify Email
         public async Task<bool> VerifyEmailAsync(string token)
         {
             var p = new DynamicParameters();
@@ -77,6 +84,7 @@ namespace SS.Application.Services
             await _userRepository.MarkEmailVerifiedAsync("sp_VerifyUserEmail", updateParams);
             return true;
         }
+        #endregion Verify Email
 
         #region Get User By Id
         public async Task<User> GetUserByIdAsync(int userId)
@@ -293,7 +301,7 @@ namespace SS.Application.Services
         }
         #endregion Forgot Password
 
-        #region Get User By Reset Token
+        #region Get User By Reset Password
         public async Task<bool> ResetPasswordAsync(ResetPasswordDto dto)
         {
             if (dto.NewPassword != dto.ConfirmPassword)
@@ -313,7 +321,7 @@ namespace SS.Application.Services
             await _userRepository.UpdatePasswordAsync("sp_UpdatePassword", update);
             return true;
         }
-        #endregion Get User By Reset Token
+        #endregion Get User By Reset Password
 
         #region Change Password
         public async Task<bool> ChangePasswordAsync(int userId, ChangePasswordDto dto)
@@ -413,44 +421,7 @@ namespace SS.Application.Services
         }
         #endregion
 
-
-        //#region Send Reset Password Email
-        //public async Task SendResetPasswordEmail(string email, string token)
-        //{
-        //    var frontendUrl = _configuration["App:FrontendUrl"];
-        //    var resetUrl = $"{frontendUrl}/reset-password?token={token}";
-
-        //    var message = new MimeMessage();
-        //    message.From.Add(new MailboxAddress("ShiwanshIn", "no-reply@shiwanshin.com"));
-        //    message.To.Add(new MailboxAddress("", email));
-        //    message.Subject = "Reset your password";
-
-        //    message.Body = new TextPart("html")
-        //    {
-        //        Text = $@"
-        //        <h3>Password Reset</h3>
-        //        <p>Click below to reset your password:</p>
-        //        <a href='{resetUrl}' 
-        //           style='padding:10px 20px;background:#0a66c2;color:#fff;text-decoration:none'>
-        //           Reset Password
-        //        </a>
-        //        <p>This link expires in 30 minutes.</p>"
-        //    };
-        //    using var client = new MailKit.Net.Smtp.SmtpClient();
-        //    await client.ConnectAsync(
-        //        _configuration["EmailSettings:Host"],
-        //        int.Parse(_configuration["EmailSettings:Port"]),
-        //        MailKit.Security.SecureSocketOptions.StartTls);
-
-        //    await client.AuthenticateAsync(
-        //        _configuration["EmailSettings:FromEmail"],
-        //        _configuration["EmailSettings:Password"]);
-
-        //    await client.SendAsync(message);
-        //    await client.DisconnectAsync(true);
-        //}
-        //#endregion Send Reset Password Email
-
+        #region Ensure Super Admin Exists
         public async Task EnsureSuperAdminExists(string superEmail, string superPassword)
         {
             var p = new DynamicParameters();
@@ -472,5 +443,6 @@ namespace SS.Application.Services
                 );
             }
         }
+        #endregion Ensure Super Admin Exists
     }
 }

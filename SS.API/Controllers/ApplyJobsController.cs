@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SS.Application.Services;
 using SS.Core.DTOs;
+using System.Security.Claims;
 
 namespace SS.API.Controllers
 {
@@ -18,6 +19,8 @@ namespace SS.API.Controllers
             _env = env;
             _logger = logger;
         }
+
+        #region Get all Application
         [HttpGet]
         [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<IActionResult> GetAllApplications()
@@ -29,12 +32,15 @@ namespace SS.API.Controllers
                 _logger.LogInformation("Get All Applications successful. Retrieved {Count} applications.", applications.Count());
                 return Ok(applications);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while getting all applications");
                 return StatusCode(500, "Internal server error");
             }
         }
+        #endregion Get All Application
+
+        #region Get Application by id
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<IActionResult> GetApplicationById(int id)
@@ -52,12 +58,37 @@ namespace SS.API.Controllers
                 return Ok(application);
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while getting application by id: {Id}", id);
                 return StatusCode(500, "Internal server error");
-            }            
+            }
         }
+        #endregion Get Application by id
+
+        #region Get My Applied Jobs
+        [HttpGet("my-applied")]
+        [Authorize]
+        public async Task<IActionResult> GetMyAppliedJobs()
+        {
+            try
+            {
+                var userId = int.Parse(
+                    User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value
+                );
+
+                var jobs = await _service.GetMyAppliedJobsAsync(userId);
+                return Ok(jobs);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching applied jobs for user");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+        #endregion Get My Applied Jobs
+
         #region Post Method
         [HttpPost]
         [Consumes("multipart/form-data")]
@@ -81,13 +112,14 @@ namespace SS.API.Controllers
 
                     if (dto.ResumeFile.Length > 5 * 1024 * 1024)
                     {
-                       _logger.LogWarning("Resume file too large: {Size} bytes", dto.ResumeFile.Length);
+                        _logger.LogWarning("Resume file too large: {Size} bytes", dto.ResumeFile.Length);
                         return BadRequest("Resume file too large (max 5 MB).");
                     }
 
                     string folder = Path.Combine(_env.ContentRootPath, "Uploads", "Resumes");
-                    if (!Directory.Exists(folder)) {                         
-                        Directory.CreateDirectory(folder); 
+                    if (!Directory.Exists(folder))
+                    {
+                        Directory.CreateDirectory(folder);
                     }
 
                     string originalName = Path.GetFileNameWithoutExtension(dto.ResumeFile.FileName);
@@ -103,13 +135,16 @@ namespace SS.API.Controllers
                     _logger.LogInformation("Resume file saved successfully at {Path}", fullPath);
 
                     savedResumePath = $"/Uploads/Resumes/{fileName}";
-                }           
+                }
+
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
                 var finalDto = new ApplyJobDto
                 {
                     JobId = dto.JobId,
                     JobTitle = dto.JobTitle,
                     JobType = dto.JobType,
+                    UserId = userId,
                     FullName = dto.FullName,
                     Email = dto.Email,
                     Phone = dto.Phone,
@@ -141,7 +176,9 @@ namespace SS.API.Controllers
             }
         }
         #endregion Post Method
-        
+
+        #region Delete Method
+
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<IActionResult> DeleteApplication(int id)
@@ -158,13 +195,15 @@ namespace SS.API.Controllers
                 await _service.DeleteApplicationAsync(id);
                 return Ok(new { message = "Application deleted successfully" });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while deleting application with Id: {Id}", id);
                 return StatusCode(500, "Internal server error");
             }
-            
+
         }
+        #endregion Delete Method
+
         #region Put Method
         [HttpPut]
         [Consumes("multipart/form-data")]
@@ -259,7 +298,7 @@ namespace SS.API.Controllers
                     LinkedIn = dto.LinkedIn,
                     GitHub = dto.GitHub
                 };
-
+                Console.WriteLine(finalDto);
                 await _service.UpdateApplicationAsync(finalDto);
                 _logger.LogInformation("Application updated successfully. Id: {Id}", dto.Id);
 
@@ -272,5 +311,26 @@ namespace SS.API.Controllers
             }
         }
         #endregion Put Method
+
+        #region Has Applied
+        [HttpGet("has-applied/{jobId}")]
+        [Authorize(Roles = "User,Admin,SuperAdmin")]
+        public async Task<IActionResult> HasApplied(int jobId)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+                var hasApplied = await _service.HasUserAppliedJobAsync(userId, jobId);
+                return Ok(hasApplied);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking applied status for JobId {JobId}", jobId);
+                return StatusCode(500, "Internal server error");
+
+            }
+
+        }
+        #endregion Has Applied
     }
 }

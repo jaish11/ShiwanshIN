@@ -102,6 +102,60 @@ namespace SS.Infrastructure.Repositories
             
         }
 
+        //public async Task<IEnumerable<ApplyJob>> GetByUserIdAsync(int userId)
+        //{
+        //    using var connection = new SqlConnection(_connectionString);
+        //    return await connection.QueryAsync<ApplyJob>(
+        //        "sp_GetAppliedJobsByUser",
+        //        new { UserId = userId },
+        //        commandType: CommandType.StoredProcedure);
+        //}
+
+        public async Task<IEnumerable<ApplyJob>> GetByUserIdAsync(string sp, DynamicParameters parameters)
+        {
+            _logger.LogInformation("Retrieving ApplyJobs by UserId using stored procedure: {StoredProcedure} in ApplyJobRepository.", sp);
+            try
+            {
+                using var connection = new SqlConnection(_connectionString);
+                _logger.LogInformation("Successfully retrieved ApplyJobs by UserId using stored procedure: {StoredProcedure} in ApplyJobRepository.", sp);
+                return await connection.QueryAsync<ApplyJob>(sp, parameters, commandType: CommandType.StoredProcedure);
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while retrieving ApplyJobs by UserId using stored procedure: {StoredProcedure} in ApplyJobRepository.", sp);
+                throw;
+            }
+            
+        }
+
+
+        //public async Task<bool> HasUserAppliedAsync(int userId, int jobId)
+        //{
+        //    using var connection = new SqlConnection(_connectionString);
+        //    var count = await connection.ExecuteScalarAsync<int>(
+        //        "sp_CheckAlreadyApplied",
+        //        new { UserId = userId, JobId = jobId },
+        //        commandType: CommandType.StoredProcedure);
+
+        //    return count > 0;
+        //}
+        public async Task<bool> HasUserAppliedAsync(string sp, DynamicParameters parameters)
+        {
+            _logger.LogInformation("Checking if user has already applied using stored procedure: {StoredProcedure} in ApplyJobRepository.", sp);
+            try
+            {
+                using var connection = new SqlConnection(_connectionString);
+                var count = await connection.ExecuteScalarAsync<int>(sp, parameters, commandType: CommandType.StoredProcedure);
+                _logger.LogInformation("Successfully checked if user has already applied using stored procedure: {StoredProcedure} in ApplyJobRepository and Total jobs count: {count}.", sp,count);                
+                return count > 0;
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while checking if user has already applied using stored procedure: {StoredProcedure} in ApplyJobRepository.", sp);
+                throw;
+            }
+        }
+
         public async Task UpdateAsync(string sp, DynamicParameters parameters)
         {
             _logger.LogInformation("Updating an ApplyJob using stored procedure: {StoredProcedure} in ApplyJobRepository.", sp);

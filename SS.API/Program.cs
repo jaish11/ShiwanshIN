@@ -23,6 +23,7 @@ builder.Services.AddAuthentication(options =>
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
+
 #region JWT Authentication
 .AddJwtBearer(options =>
 {
@@ -42,6 +43,7 @@ builder.Services.AddAuthentication(options =>
     };
 })
 #endregion JWT Authentication
+
 #region Google Auth
 .AddGoogle("Google", options =>
 {
@@ -98,6 +100,7 @@ builder.Services.AddScoped<UserProfileService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
 #region Input JWT Token
 builder.Services.AddSwaggerGen(c =>
 {

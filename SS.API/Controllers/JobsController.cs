@@ -16,6 +16,8 @@ namespace SS.API.Controllers
             _jobServices = jobServices;
             _logger = logger;
         }
+
+        #region Get All Jobs
         [HttpGet]
         //[Authorize(Roles = "User,Admin,SuperAdmin")]
         public async Task<IActionResult> GetAllJobs()
@@ -33,6 +35,9 @@ namespace SS.API.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+        #endregion Get All Jobs
+        
+        #region Get Job By Id
         [HttpGet("{id}")]
         //[Authorize(Roles = "User,Admin,SuperAdmin")]
         public async Task<IActionResult> GetJobById(int id)
@@ -55,6 +60,9 @@ namespace SS.API.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+        #endregion Get Job By Id
+        
+        #region Add Job
         [HttpPost]
         [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<IActionResult> AddJob([FromBody] JobOpportunityDto jobDto)
@@ -77,6 +85,9 @@ namespace SS.API.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+        #endregion Add Job
+        
+        #region Update Job
         [HttpPut]
         [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<IActionResult> UpdateJob([FromBody] JobOpportunityDto jobDto)
@@ -105,6 +116,9 @@ namespace SS.API.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+        #endregion Update Job
+        
+        #region Delete Job
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<IActionResult> DeleteJob(int id)
@@ -129,5 +143,7 @@ namespace SS.API.Controllers
             }
             
         }
+        #endregion Delete Job
+
     }
 }

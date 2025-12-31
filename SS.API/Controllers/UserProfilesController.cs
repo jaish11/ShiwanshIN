@@ -23,6 +23,8 @@ namespace SS.API.Controllers
             _logger = logger;
             _authService = authService;
         }
+
+        #region Get All Profiles
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> GetAll()
@@ -30,7 +32,9 @@ namespace SS.API.Controllers
             var res = await _service.GetAllAsync();
             return Ok(res);
         }
+        #endregion Get All Profiles
 
+        #region Get Profiles by id
         [HttpGet("{id}")]
         [Authorize]
         public async Task<IActionResult> GetById(int id)
@@ -39,7 +43,9 @@ namespace SS.API.Controllers
             if (profile == null) return NotFound();
             return Ok(profile);
         }
+        #endregion Get Profiles by id
 
+        #region Get Profiles by user id
         [HttpGet("by-user/{userId}")]
         [Authorize]
         public async Task<IActionResult> GetByUserId(int userId)
@@ -69,11 +75,10 @@ namespace SS.API.Controllers
             }
 
             return Ok(profile);
-            //var profile = await _service.GetByUserIdAsync(userId);
-            //if (profile == null) return NotFound();
-            //return Ok(profile);
         }
+        #endregion Get Profiles by user id
 
+        #region Get My Profile
         [HttpGet("me")]
         [Authorize]
         public async Task<IActionResult> GetMyProfile()
@@ -102,7 +107,9 @@ namespace SS.API.Controllers
 
             return Ok(profile);
         }
+        #endregion Get My Profile
 
+        #region Create Profile
         [HttpPost]
         [Consumes("multipart/form-data")]
         [Authorize] // require login
@@ -197,7 +204,9 @@ namespace SS.API.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+        #endregion Create Profile
 
+        #region Update Profile
         [HttpPut]
         [Consumes("multipart/form-data")]
         [Authorize]
@@ -310,7 +319,9 @@ namespace SS.API.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+        #endregion Update Profile
 
+        #region Delete Profile
         [HttpDelete("{id}")]
         [Authorize(Roles = "SuperAdmin")] // only admins can remove others; change as needed
         public async Task<IActionResult> Delete(int id)
@@ -326,7 +337,7 @@ namespace SS.API.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
-
+        #endregion Delete Profile
 
     }
 }

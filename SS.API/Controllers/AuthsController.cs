@@ -17,6 +17,7 @@ namespace SS.API.Controllers
             _authService = authService;
         }
 
+        #region Register
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
@@ -25,6 +26,9 @@ namespace SS.API.Controllers
             var id = await _authService.RegisterAsync(dto, role: "User");
             return Ok(new { message = "User registered", id });
         }
+        #endregion Register
+
+        #region Login
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
@@ -43,11 +47,10 @@ namespace SS.API.Controllers
                 email = user.Email,
                 role = user.Role
             });
-
-
-            //return Ok(new { token });
         }
+        #endregion Login
 
+        #region Google Login
         [HttpPost("google")]
         public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDto dto)
         {
@@ -65,8 +68,9 @@ namespace SS.API.Controllers
                 role = result.User.Role
             });
         }
+        #endregion Google Login
 
-
+        #region Email Verification
         [HttpGet("verify-email")]
         public async Task<IActionResult> VerifyEmail(string token)
         {
@@ -76,15 +80,18 @@ namespace SS.API.Controllers
 
             return Ok("Email verified successfully!");
         }
+        #endregion Email Verification
 
-
+        #region Forgot Password
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
         {
             await _authService.ForgotPasswordAsync(dto.Email);
             return Ok("Password reset link sent");
         }
+        #endregion Forgot Password
 
+        #region Reset Password
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
         {
@@ -95,8 +102,9 @@ namespace SS.API.Controllers
 
             return Ok(new { message = "Password reset successful" });
         }
+        #endregion Reset Password
 
-
+        #region Change Password
         [Authorize]
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword(ChangePasswordDto dto)
@@ -111,6 +119,7 @@ namespace SS.API.Controllers
             var ok = await _authService.ChangePasswordAsync(userId, dto);
             return ok ? Ok(new { message = "Password changed successfully" }): BadRequest(new { message = "Old password incorrect" });
         }
+        #endregion Change Password
 
         #region Resend Varification
         [HttpPost("resend-verification")]
