@@ -1,0 +1,5 @@
+﻿CREATE PROCEDURE sp_GetAllAppliedJobs
+AS
+BEGIN
+    SELECT * FROM ApplyJobs ORDER BY AppliedDate DESC;
+END;

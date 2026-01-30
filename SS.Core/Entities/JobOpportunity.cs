@@ -12,6 +12,11 @@ namespace SS.Core.Entities
         public string Department { get; set; }
         public string Category { get; set; }
 
+        //this is for company name and created by user
+        public string CompanyName { get; set; }   
+        public int CreatedByUserId { get; set; }
+        public bool IsActive { get; set; }
+
         public string Image { get; set; }
         public string? Duration { get; set; }
         public string Location { get; set; }

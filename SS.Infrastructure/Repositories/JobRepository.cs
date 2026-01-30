@@ -20,13 +20,13 @@ namespace SS.Infrastructure.Repositories
             _logger = logger;
         }
 
-        public async Task<IEnumerable<JobOpportunity>> GetAllAsync(string sp)
+        public async Task<IEnumerable<JobOpportunity>> GetAllAsync(string sp, DynamicParameters parameters)
         {        
             _logger.LogInformation("Retrieving all JobOpportunities using stored procedure: {StoredProcedure} in JobRepository.", sp);
             try
             {
                 using var connection = new SqlConnection(_connectionString);
-                var result = await connection.QueryAsync<JobOpportunity>(sp, commandType: CommandType.StoredProcedure); 
+                var result = await connection.QueryAsync<JobOpportunity>(sp, parameters,commandType: CommandType.StoredProcedure); 
                 if(result == null || !result.Any())
                 {
                     _logger.LogWarning("No JobOpportunities found using stored procedure: {StoredProcedure} in JobRepository.", sp);

@@ -11,6 +11,9 @@ namespace SS.Core.DTOs
         public string Salary { get; set; }
         public string Department { get; set; }
         public string Category { get; set; }
+        //this is for company Name and job active status
+        public string CompanyName { get; set; } 
+        public bool IsActive { get; set; }
         public string Image { get; set; }
         public string? Duration { get; set; }
         public string Location { get; set; }

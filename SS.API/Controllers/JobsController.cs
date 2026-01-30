@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SS.Application.Services;
 using SS.Core.DTOs;
+using System.Security.Claims;
 
 namespace SS.API.Controllers
 {
@@ -11,6 +12,9 @@ namespace SS.API.Controllers
     {
         private readonly JobServices _jobServices;
         private readonly ILogger<JobsController> _logger;
+        private int GetUserId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        private string GetRole() => User.FindFirstValue(ClaimTypes.Role);
+
         public JobsController(JobServices jobServices, ILogger<JobsController> logger)
         {
             _jobServices = jobServices;
@@ -36,16 +40,53 @@ namespace SS.API.Controllers
             }
         }
         #endregion Get All Jobs
-        
+
+        #region Get Jobs Based on Role 
+        [Authorize(Roles = "Admin,SuperAdmin")] 
+        [HttpGet("admin")] 
+        public async Task<IActionResult> GetJobs() {
+            
+            var userId = GetUserId();
+            var role = GetRole();
+            var jobs = await _jobServices.GetJobsByRoleAsync(userId, role); return Ok(jobs);
+        }
+        #endregion Get Jobs Based on Role
+
+        #region Get User Job By Id
+        [HttpGet("public/{id}")]
+        public async Task<IActionResult> GetUserJobById(int id)
+        {
+            _logger.LogInformation("Get Job By Id called with Id: {Id}", id);
+            try
+            {
+                var job = await _jobServices.GetUserPageJobIdAsync(id);
+                if (job == null)
+                {
+                    _logger.LogWarning("Job with Id: {Id} not found.", id);
+                    return NotFound($"Job with ID {id} not found");
+                }
+                _logger.LogInformation("Get Job By Id successful for Id: {Id}", id);
+                return Ok(job);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting job by id: {Id}", id);
+                return StatusCode(500, "Internal server error");
+            }
+        }
+        #endregion Get User Job By Id
+
         #region Get Job By Id
         [HttpGet("{id}")]
-        //[Authorize(Roles = "User,Admin,SuperAdmin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<IActionResult> GetJobById(int id)
         {
             _logger.LogInformation("Get Job By Id called with Id: {Id}", id);
             try
             {
-                var job = await _jobServices.GetJobByIdAsync(id);
+                var userId = GetUserId();
+                var role = GetRole();
+                var job = await _jobServices.GetJobByIdAsync(id,userId,role);
                 if (job == null)
                 {
                     _logger.LogWarning("Job with Id: {Id} not found.", id);
@@ -70,12 +111,13 @@ namespace SS.API.Controllers
             _logger.LogInformation("Add Job called.");
             try
             {
+                var userId = GetUserId();
                 if (jobDto == null)
                 {
                     _logger.LogWarning("Add Job failed: jobDto is null.");
                     return BadRequest("Job data is null");
                 }
-                await _jobServices.AddJobAsync(jobDto);
+                await _jobServices.AddJobAsync(jobDto, userId);
                 _logger.LogInformation("Job added successfully.");
                 return Ok(new { message = "Job created successfully" });
             }
@@ -95,7 +137,9 @@ namespace SS.API.Controllers
             _logger.LogInformation("Update Job called for Id: {Id}", jobDto.Id);
             try
             {
-                var jobId = await _jobServices.GetJobByIdAsync(jobDto.Id);
+                var userId = GetUserId();
+                var role = GetRole();
+                var jobId = await _jobServices.GetJobByIdAsync(jobDto.Id,userId,role);
                 if (jobId == null)
                 {
                     _logger.LogWarning("Delete Job failed: Job with Id: {Id} not found.", jobId);
@@ -106,7 +150,7 @@ namespace SS.API.Controllers
                     _logger.LogWarning("Update Job failed: jobDto is null.");
                     return BadRequest("Job data is null");
                 }
-                await _jobServices.UpdateJobAsync(jobDto);
+                await _jobServices.UpdateJobAsync(jobDto,userId,role);
                 _logger.LogInformation("Job with Id: {Id} updated successfully.", jobDto.Id);
                 return Ok(new { message = "Job updated successfully" });
             }
@@ -126,13 +170,15 @@ namespace SS.API.Controllers
             _logger.LogInformation("Delete Job called for Id: {Id}", id);
             try
             {
-                var job = await _jobServices.GetJobByIdAsync(id);
+                var userId = GetUserId();
+                var role = GetRole();
+                var job = await _jobServices.GetJobByIdAsync(id,userId,role);
                 if (job == null)
                 {
                     _logger.LogWarning("Delete Job failed: Job with Id: {Id} not found.", id);
                     return NotFound($"Job with ID {id} not found");
                 }
-                await _jobServices.DeleteJobAsync(id);
+                await _jobServices.DeleteJobAsync(id,userId,role);
                 _logger.LogInformation("Job with Id: {Id} deleted successfully.", id);
                 return Ok(new { message = "Job deleted successfully" });
             }

@@ -1,0 +1,5 @@
+﻿CREATE PROCEDURE sp_GetAllUsers  
+AS  
+BEGIN  
+    SELECT * FROM Users ORDER BY CreatedDate DESC;  
+END
